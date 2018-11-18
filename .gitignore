@@ -3,6 +3,10 @@
 # Compiled class file
 *.class
 *.iml
+*.xml
+.idea
+out
+
 
 # Log file
 *.log
