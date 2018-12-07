@@ -19,6 +19,7 @@ public class TranscriberDemo {
         StreamSpeechRecognizer recognizer = new StreamSpeechRecognizer(configuration);
         InputStream stream = new FileInputStream(new File("test.wav"));
 
+
         recognizer.startRecognition(stream);
         SpeechResult result;
         while ((result = recognizer.getResult()) != null) {

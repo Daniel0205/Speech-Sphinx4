@@ -7,9 +7,13 @@ public class RecognizerDemo {
 
         Configuration configuration = new Configuration();
 
-        configuration.setAcousticModelPath("resources/edu/cmu/sphinx/models/voxforge-es-0.1.1/model_parameters/voxforge_es_sphinx.cd_cont_1500");
-        configuration.setDictionaryPath("resources/edu/cmu/sphinx/models/voxforge-es-0.1.1/etc/voxforge_es_sphinx.dic");
-        configuration.setLanguageModelPath("resources/edu/cmu/sphinx/models/voxforge-es-0.1.1/etc/voxforge_es_sphinx.transcription.test.lm");
+        configuration.setAcousticModelPath("resources/cmusphinx-es-5.2/model_parameters/voxforge_es_sphinx.cd_ptm_4000");
+        configuration.setDictionaryPath("resources/cmusphinx-es-5.2/etc/voxforge_es_sphinx.dic");
+
+        configuration.setGrammarPath("resources/grammars");
+        configuration.setGrammarName("grammar");
+        configuration.setUseGrammar(true);
+
 
         LiveSpeechRecognizer recognizer = new LiveSpeechRecognizer(configuration);
         // InputStream stream = new FileInputStream(new File("test.wav"));
