@@ -16,7 +16,6 @@ public class RecognizerDemo {
 
 
         LiveSpeechRecognizer recognizer = new LiveSpeechRecognizer(configuration);
-        // InputStream stream = new FileInputStream(new File("test.wav"));
 
         recognizer.startRecognition(true);
         SpeechResult result;
