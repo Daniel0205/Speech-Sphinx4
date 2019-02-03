@@ -10,24 +10,73 @@ import edu.cmu.sphinx.api.SpeechResult;
 
 public class GUIStroop extends JFrame implements Runnable {
 
-
+    //Variables de la GUI
     private Container contenedor;
     private JPanel panelUsuario;
     private JTextArea palabras;
-    private JButton iniciar;
+    private JButton iniciar,palabrasB,mixPalabrasB,coloresB,mixColoresB;
+    private Font fuente;
+    //Hilo del reconocedor de voz
     private Thread speech;
+    //Variables usadas en el reconocimiento
+    private Configuration configuration;
+    private LiveSpeechRecognizer recognizer = null;
+    private SpeechResult result;
+    private PruebaStroop stroop;
+    private String tipoPrueba;
 
+    //Contructor
     public GUIStroop(){
         super("Prueba De STROOP");
         speech = new Thread(this);
+        stroop = new PruebaStroop();
+        fuente = new Font("SansSerif",Font.BOLD,40);
 
-        initGUI();
+        initMenu();
     }
 
-    private void initGUI() {
-
+    //Menu para elegir la modalida de la prueba
+    private void initMenu() {
         contenedor = getContentPane();
         contenedor.removeAll();
+        getContentPane().setLayout(null);
+
+        panelUsuario = new JPanel();
+        panelUsuario.setBounds(0, 0, 350, 350);
+        contenedor.add(panelUsuario);
+        panelUsuario.setLayout(new FlowLayout());
+
+        palabrasB = new JButton("Palabras");
+        palabrasB.setSize(100,50);
+        palabrasB.addActionListener(new ManejadorDeBotones());
+        panelUsuario.add(palabrasB);
+
+        coloresB = new JButton("Colores");
+        coloresB.setSize(100,50);
+        coloresB.addActionListener(new ManejadorDeBotones());
+        panelUsuario.add(coloresB);
+
+        mixPalabrasB = new JButton("Mix Palabras");
+        mixPalabrasB.setSize(100,50);
+        mixPalabrasB.addActionListener(new ManejadorDeBotones());
+        panelUsuario.add(mixPalabrasB);
+
+        mixColoresB = new JButton("Mix Colores");
+        mixColoresB.setSize(100,50);
+        mixColoresB.addActionListener(new ManejadorDeBotones());
+        panelUsuario.add(mixColoresB);
+
+        setResizable(false);
+        setSize(350,350);
+        setVisible(true);
+        setLocationRelativeTo(null);
+    }
+
+    //GUI de la prueba
+    private void initGUI() {
+
+        contenedor.removeAll();
+        contenedor.repaint();
         getContentPane().setLayout(null);
 
         panelUsuario = new JPanel();
@@ -36,6 +85,7 @@ public class GUIStroop extends JFrame implements Runnable {
         panelUsuario.setLayout(new BorderLayout());
 
         palabras = new JTextArea();
+        palabras.setFont(fuente);
         palabras.setEditable(false);
         JScrollPane sp = new JScrollPane(palabras);
         panelUsuario.add(sp,BorderLayout.CENTER);
@@ -52,22 +102,34 @@ public class GUIStroop extends JFrame implements Runnable {
         setLocationRelativeTo(null);
     }
 
+    //Actualiza la palabra y el color que aparecera
+    private void actualizarPalabras(int i) {
+        Color color = new Color(0,0,0);
 
-    @Override
-    public void run() {
-        iniciar.setEnabled(false);
+        if(!(tipoPrueba.compareTo("Palabras")==0)){
+            switch (stroop.getColor(i)){
+                case "Azul":
+                    color = new Color(20,120,252);
+                    break;
+                case "Rojo":
+                    color = new Color(245,53,53);
+                    break;
+                case "Verde":
+                    color = new Color(53,245,59);
+                    break;
+            }
+            palabras.setForeground(color);
+        }
 
-        Configuration configuration = new Configuration();
+        if (tipoPrueba.compareTo("Colores")==0){
+            palabras.setText("XXXX");
+        }
+        else palabras.setText(stroop.getPalabra(i));
 
-        configuration.setAcousticModelPath("resources/cmusphinx-es-5.2/model_parameters/voxforge_es_sphinx.cd_ptm_4000");
-        configuration.setDictionaryPath("resources/cmusphinx-es-5.2/etc/voxforge_es_sphinx.dic");
+    }
 
-        configuration.setGrammarPath("resources/grammars");
-        configuration.setGrammarName("grammar");
-        configuration.setUseGrammar(true);
-
-
-        LiveSpeechRecognizer recognizer = null;
+    //Inicia la pruba
+    public void iniciarPrueba(){
         try {
             recognizer = new LiveSpeechRecognizer(configuration);
         } catch (IOException e) {
@@ -75,28 +137,64 @@ public class GUIStroop extends JFrame implements Runnable {
         }
 
         recognizer.startRecognition(true);
-        SpeechResult result;
-       while (true) {
-        result = recognizer.getResult();
-        String res = result.getHypothesis();
 
-        palabras.setText(palabras.getText()+ res+ "\n");
 
-            if(res == "ROJO"){
-                break;
-            }
+        for (int i=0;i<100;){
+            actualizarPalabras(i);
+
+            result = recognizer.getResult();
+            String res = result.getHypothesis();
+
+            System.out.print("La palabra es: " +res);
+
+            if(stroop.comprobarPalabra(res,i,tipoPrueba)) i++;
+
         }
         recognizer.stopRecognition();
+
+    }
+
+    //Inicia el Hilo para controlar el reconcedor y la GUI al tiempo
+    @Override
+    public void run() {
+        iniciar.setEnabled(false);
+
+        //////////Configuracion del reconocedor de voz////////////
+        configuration = new Configuration();
+
+        configuration.setAcousticModelPath("resources/cmusphinx-es-5.2/model_parameters/voxforge_es_sphinx.cd_ptm_4000");
+        configuration.setDictionaryPath("resources/cmusphinx-es-5.2/etc/voxforge_es_sphinx.dic");
+
+        configuration.setGrammarPath("resources/grammars");
+        configuration.setGrammarName("grammar");
+        configuration.setUseGrammar(true);
+        //////////////////////////////////////////////////////////
+
+        //Inicia la prueba
+        iniciarPrueba();
     }
 
     private class ManejadorDeBotones implements ActionListener {
-
 
         @Override
         public void actionPerformed(ActionEvent actionEvent)  {
             if(actionEvent.getSource()== iniciar){
                 speech.start();
+                return;
             }
+            if (actionEvent.getSource()== palabrasB){
+                tipoPrueba = "Palabras";
+            }
+            if (actionEvent.getSource()== coloresB){
+                tipoPrueba = "Colores";
+            }
+            if (actionEvent.getSource()== mixPalabrasB){
+                tipoPrueba = "Mix Palabras";
+            }
+            if (actionEvent.getSource()== mixColoresB){
+                tipoPrueba = "Mix Colores";
+            }
+            initGUI();
         }
     }
 
