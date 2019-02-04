@@ -13,11 +13,11 @@ public class GUIStroop extends JFrame implements Runnable {
     //Variables de la GUI
     private Container contenedor;
     private JPanel panelUsuario;
-    private JTextArea palabras;
+    private JLabel palabras;
     private JButton iniciar,palabrasB,mixPalabrasB,coloresB,mixColoresB;
     private Font fuente;
     //Hilo del reconocedor de voz
-    private Thread speech;
+    private Thread speech,reconocedor;
     //Variables usadas en el reconocimiento
     private Configuration configuration;
     private LiveSpeechRecognizer recognizer = null;
@@ -29,6 +29,7 @@ public class GUIStroop extends JFrame implements Runnable {
     public GUIStroop(){
         super("Prueba De STROOP");
         speech = new Thread(this);
+        reconocedor = new Thread(new Reconociendo());
         stroop = new PruebaStroop();
         fuente = new Font("SansSerif",Font.BOLD,40);
 
@@ -56,10 +57,6 @@ public class GUIStroop extends JFrame implements Runnable {
         coloresB.addActionListener(new ManejadorDeBotones());
         panelUsuario.add(coloresB);
 
-        mixPalabrasB = new JButton("Mix Palabras");
-        mixPalabrasB.setSize(100,50);
-        mixPalabrasB.addActionListener(new ManejadorDeBotones());
-        panelUsuario.add(mixPalabrasB);
 
         mixColoresB = new JButton("Mix Colores");
         mixColoresB.setSize(100,50);
@@ -84,9 +81,10 @@ public class GUIStroop extends JFrame implements Runnable {
         contenedor.add(panelUsuario);
         panelUsuario.setLayout(new BorderLayout());
 
-        palabras = new JTextArea();
+        palabras = new JLabel();
         palabras.setFont(fuente);
-        palabras.setEditable(false);
+        palabras.setHorizontalAlignment(JLabel.CENTER);
+        //palabras.setEditable(false);
         JScrollPane sp = new JScrollPane(palabras);
         panelUsuario.add(sp,BorderLayout.CENTER);
 
@@ -109,13 +107,13 @@ public class GUIStroop extends JFrame implements Runnable {
         if(!(tipoPrueba.compareTo("Palabras")==0)){
             switch (stroop.getColor(i)){
                 case "Azul":
-                    color = new Color(20,120,252);
+                    color = new Color(0,0,255);
                     break;
                 case "Rojo":
-                    color = new Color(245,53,53);
+                    color = new Color(255,0,0);
                     break;
                 case "Verde":
-                    color = new Color(53,245,59);
+                    color = new Color(0,255,0);
                     break;
             }
             palabras.setForeground(color);
@@ -129,7 +127,7 @@ public class GUIStroop extends JFrame implements Runnable {
     }
 
     //Inicia la pruba
-    public void iniciarPrueba(){
+    public void iniciarPrueba() throws Exception{
         try {
             recognizer = new LiveSpeechRecognizer(configuration);
         } catch (IOException e) {
@@ -138,19 +136,14 @@ public class GUIStroop extends JFrame implements Runnable {
 
         recognizer.startRecognition(true);
 
+        reconocedor.start();
 
-        for (int i=0;i<100;){
-            actualizarPalabras(i);
+        reconocedor.join(10000);
 
-            result = recognizer.getResult();
-            String res = result.getHypothesis();
-
-            System.out.print("La palabra es: " +res);
-
-            if(stroop.comprobarPalabra(res,i,tipoPrueba)) i++;
-
-        }
-        recognizer.stopRecognition();
+        reconocedor.interrupt();
+        //recognizer.stopRecognition();
+        System.out.println("estado: "+reconocedor.isInterrupted());
+        System.out.println("estado: "+reconocedor.isAlive());
 
     }
 
@@ -171,7 +164,11 @@ public class GUIStroop extends JFrame implements Runnable {
         //////////////////////////////////////////////////////////
 
         //Inicia la prueba
-        iniciarPrueba();
+        try {
+            iniciarPrueba();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private class ManejadorDeBotones implements ActionListener {
@@ -198,4 +195,27 @@ public class GUIStroop extends JFrame implements Runnable {
         }
     }
 
+    private class Reconociendo implements Runnable{
+
+        @Override
+        public void run() {
+            Thread t = Thread.currentThread();
+            int i = 0;
+
+            while((i<100) && !(t.isInterrupted())){
+                actualizarPalabras(i);
+
+                result = recognizer.getResult();
+                String res = result.getHypothesis();
+
+                System.out.println("La palabra es: " +res);
+
+                if(stroop.comprobarPalabra(res,i,tipoPrueba)) i++;
+                System.out.println("estado: "+t.isInterrupted());
+            }// fin While
+
+            System.out.println("He terminado :D");
+
+        }// fin run()
+    }// fin clase Reconociendo
 }

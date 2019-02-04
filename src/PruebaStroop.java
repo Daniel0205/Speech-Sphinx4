@@ -21,7 +21,16 @@ public class PruebaStroop extends JFrame {
                 "Azul", "Verde", "Rojo", "Azul", "Verde", "Rojo", "Verde", "Rojo", "Azul", "Verde",
                 "Rojo", "Azul", "Verde", "Rojo", "Azul", "Rojo", "Verde", "Azul", "Rojo", "Verde" };
 
-
+        colores = new String[]{"Azul","Rojo","Verde","Azul","Verde","Rojo","Verde","Rojo","Azul","Rojo",
+                "Azul", "Verde","Rojo","Verde","Azul","Verde","Azul","Rojo","Verde","Azul",
+                "Rojo","Azul","Verde","Rojo","Verde","Azul","Verde","Rojo","Azul","Rojo",
+                "Azul","Verde","Azul","Verde","Rojo","Verde","Rojo","Azul","Rojo","Verde",
+                "Azul","Verde","Rojo","Azul","Rojo","Verde","Rojo","Azul","Verde", "Rojo",
+                "Verde","Azul","Rojo","Verde","Azul","Verde","Rojo","Azul","Verde","Azul",
+                "Verde","Rojo","Azul","Verde","Rojo","Azul","Verde","Rojo","Azul","Verde",
+                "Azul","Rojo","Azul","Rojo","Verde","Azul","Verde","Rojo","Azul","Rojo",
+                "Rojo","Azul","Verde","Rojo","Azul","Verde","Rojo","Azul","Verde","Azul",
+                "Verde","Rojo","Azul","Verde","Rojo","Azul","Rojo","Verde","Azul","Rojo"};
     }
 
     //Obtiene las palabras
