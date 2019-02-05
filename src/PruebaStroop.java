@@ -40,7 +40,7 @@ public class PruebaStroop extends JFrame {
 
     //Obtiene el color de las palabras
     String getColor(int index){
-        return palabras[index];
+        return colores[index];
     }
 
     //Evalua la palabra obtenida con la que esta en la prueba segun la modalida de la prueba

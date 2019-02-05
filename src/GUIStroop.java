@@ -12,9 +12,9 @@ public class GUIStroop extends JFrame implements Runnable {
 
     //Variables de la GUI
     private Container contenedor;
-    private JPanel panelUsuario;
+    private JPanel panelUsuario,southPanel;
     private JLabel palabras;
-    private JButton iniciar,palabrasB,mixPalabrasB,coloresB,mixColoresB;
+    private JButton iniciar,palabrasB,resultados,coloresB,mixColoresB,menu;
     private Font fuente;
     //Hilo del reconocedor de voz
     private Thread speech,reconocedor;
@@ -24,6 +24,7 @@ public class GUIStroop extends JFrame implements Runnable {
     private SpeechResult result;
     private PruebaStroop stroop;
     private String tipoPrueba;
+    private int contador = 0;
 
     //Contructor
     public GUIStroop(){
@@ -40,6 +41,7 @@ public class GUIStroop extends JFrame implements Runnable {
     private void initMenu() {
         contenedor = getContentPane();
         contenedor.removeAll();
+        contenedor.repaint();
         getContentPane().setLayout(null);
 
         panelUsuario = new JPanel();
@@ -81,6 +83,10 @@ public class GUIStroop extends JFrame implements Runnable {
         contenedor.add(panelUsuario);
         panelUsuario.setLayout(new BorderLayout());
 
+        southPanel = new JPanel();
+        southPanel.setLayout(new FlowLayout());
+        panelUsuario.add(southPanel,BorderLayout.SOUTH);
+
         palabras = new JLabel();
         palabras.setFont(fuente);
         palabras.setHorizontalAlignment(JLabel.CENTER);
@@ -91,8 +97,17 @@ public class GUIStroop extends JFrame implements Runnable {
         iniciar = new JButton("Iniciar");
         iniciar.setSize(100,50);
         iniciar.addActionListener(new ManejadorDeBotones());
-        panelUsuario.add(iniciar,BorderLayout.SOUTH);
+        southPanel.add(iniciar,BorderLayout.SOUTH);
 
+        resultados = new JButton("Ver resultados");
+        resultados.setEnabled(false);
+        resultados.addActionListener(new ManejadorDeBotones());
+        southPanel.add(resultados);
+
+        menu = new JButton("Volver al menu");
+        menu.setEnabled(false);
+        menu.addActionListener(new ManejadorDeBotones());
+        southPanel.add(menu);
 
         setResizable(false);
         setSize(500,500);
@@ -138,13 +153,15 @@ public class GUIStroop extends JFrame implements Runnable {
 
         reconocedor.start();
 
-        reconocedor.join(10000);
+        reconocedor.join(5000);
 
         reconocedor.interrupt();
-        //recognizer.stopRecognition();
-        System.out.println("estado: "+reconocedor.isInterrupted());
-        System.out.println("estado: "+reconocedor.isAlive());
 
+        palabras.setText("Prueba terminada");
+        palabras.setForeground(Color.BLACK);
+
+        menu.setEnabled(true);
+        resultados.setEnabled(true);
     }
 
     //Inicia el Hilo para controlar el reconcedor y la GUI al tiempo
@@ -179,14 +196,21 @@ public class GUIStroop extends JFrame implements Runnable {
                 speech.start();
                 return;
             }
+            if(actionEvent.getSource()== menu){
+                initMenu();
+                contador=0;
+                return;
+            }
+            if(actionEvent.getSource()== resultados){
+                JOptionPane.showMessageDialog(null,"Numero de palabras: "+contador);
+                return;
+            }
+
             if (actionEvent.getSource()== palabrasB){
                 tipoPrueba = "Palabras";
             }
             if (actionEvent.getSource()== coloresB){
                 tipoPrueba = "Colores";
-            }
-            if (actionEvent.getSource()== mixPalabrasB){
-                tipoPrueba = "Mix Palabras";
             }
             if (actionEvent.getSource()== mixColoresB){
                 tipoPrueba = "Mix Colores";
@@ -211,9 +235,10 @@ public class GUIStroop extends JFrame implements Runnable {
                 System.out.println("La palabra es: " +res);
 
                 if(stroop.comprobarPalabra(res,i,tipoPrueba)) i++;
-                System.out.println("estado: "+t.isInterrupted());
-            }// fin While
 
+            }// fin While
+            contador=i;
+            recognizer.stopRecognition();
             System.out.println("He terminado :D");
 
         }// fin run()
